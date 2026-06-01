@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>スポーツニュース横断検索</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css" />
+  <style>
+    /* ---- リセット & ベース ---- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background: #f4f2ed;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2.5rem 1rem;
+      color: #1a1a18;
+    }
+
+    /* ---- ラッパー ---- */
+    .wrap {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 2rem 2rem 1.75rem;
+      width: 100%;
+      max-width: 620px;
+      border: 1px solid #d9d7ce;
+    }
+
+    /* ---- ヘッダー ---- */
+    .header {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #e8e6df;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a18;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .header h1 .ti {
+      font-size: 22px;
+      color: #C0392B;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888780;
+      margin-top: 5px;
+    }
+
+    /* ---- 検索バー ---- */
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-row input {
+      flex: 1;
+      height: 42px;
+      border: 1.5px solid #d3d1c7;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #1a1a18;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    .search-row input:focus {
+      border-color: #C0392B;
+    }
+
+    .search-row input::placeholder {
+      color: #b4b2a9;
+    }
+
+    /* ---- ボタン共通 ---- */
+    button {
+      height: 42px;
+      border-radius: 8px;
+      border: 1.5px solid #d3d1c7;
+      background: transparent;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      color: #444441;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+
+    button:hover {
+      background: #f4f2ed;
+      border-color: #888780;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* ---- プライマリボタン ---- */
+    .btn-primary {
+      background: #C0392B !important;
+      border-color: #C0392B !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      background: #a93226 !important;
+      border-color: #a93226 !important;
+    }
+
+    /* ---- セクションラベル ---- */
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888780;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    /* ---- サイトカード ---- */
+    .sites {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .site-card {
+      border: 1.5px solid #d3d1c7;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+      background: #faf9f6;
+    }
+
+    .site-card:hover {
+      border-color: #888780;
+    }
+
+    .site-card.active {
+      border-color: #C0392B;
+      background: #fdf3f2;
+    }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d3d1c7;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .site-card.active .dot {
+      background: #C0392B;
+    }
+
+    .site-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #444441;
+      flex: 1;
+    }
+
+    .site-card.active .site-name {
+      color: #C0392B;
+    }
+
+    .check-icon {
+      font-size: 15px;
+      color: #d3d1c7;
+      transition: color 0.15s;
+    }
+
+    .site-card.active .check-icon {
+      color: #C0392B;
+    }
+
+    .site-url {
+      font-size: 11px;
+      color: #b4b2a9;
+    }
+
+    /* ======================================
+       検索期間ブロック
+    ====================================== */
+    .filter-wrap {
+      border: 1.5px solid #d3d1c7;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.15s;
+    }
+
+    .filter-wrap.open {
+      border-color: #C0392B;
+    }
+
+    /* ---- 期間フィルター行（クリック可） ---- */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f4f2ed;
+      padding: 11px 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s;
+    }
+
+    .filter-row:hover {
+      background: #ebe9e2;
+    }
+
+    .filter-wrap.open .filter-row {
+      background: #fdf3f2;
+      border-bottom: 1px solid #f5cdc9;
+    }
+
+    .filter-row .ti-calendar {
+      font-size: 16px;
+      color: #888780;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      color: #888780;
+      white-space: nowrap;
+    }
+
+    .filter-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a18;
+      flex: 1;
+    }
+
+    .tag {
+      font-size: 11px;
+      background: #e6f7ef;
+      color: #0f6e56;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tag.custom {
+      background: #fbeaea;
+      color: #a93226;
+    }
+
+    /* ---- 開閉シェブロン ---- */
+    .chevron {
+      font-size: 16px;
+      color: #888780;
+      transition: transform 0.2s ease;
+    }
+
+    .filter-wrap.open .chevron {
+      transform: rotate(180deg);
+      color: #C0392B;
+    }
+
+    /* ---- 展開パネル ---- */
+    .date-panel {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, padding 0.2s ease;
+      background: #fff;
+      padding: 0 16px;
+    }
+
+    .filter-wrap.open .date-panel {
+      max-height: 200px;
+      padding: 14px 16px 16px;
+    }
+
+    .panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #b4b2a9;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    /* ---- プリセットボタン行 ---- */
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+    }
+
+    .preset-btn {
+      height: 34px;
+      padding: 0 14px;
+      font-size: 13px;
+      border-radius: 20px;
+      border: 1.5px solid #d3d1c7;
+      background: #faf9f6;
+      color: #444441;
+      font-weight: 500;
+      transition: all 0.12s;
+    }
+
+    .preset-btn:hover {
+      border-color: #C0392B;
+      color: #C0392B;
+      background: #fdf3f2;
+    }
+
+    .preset-btn.active {
+      background: #C0392B;
+      border-color: #C0392B;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .preset-btn.active:hover {
+      background: #a93226;
+    }
+
+    /* ---- カスタム日付入力 ---- */
+    .custom-row {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .custom-row.show {
+      display: flex;
+    }
+
+    .date-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .date-input-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888780;
+      letter-spacing: 0.04em;
+    }
+
+    .date-input-group input[type="date"] {
+      height: 36px;
+      border: 1.5px solid #d3d1c7;
+      border-radius: 8px;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #1a1a18;
+      font-family: inherit;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    .date-input-group input[type="date"]:focus {
+      border-color: #C0392B;
+    }
+
+    .date-sep {
+      font-size: 16px;
+      color: #b4b2a9;
+      margin-top: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ---- 個別検索ボタン群 ---- */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-row button {
+      flex: 1;
+      min-width: 140px;
+      font-size: 13px;
+      color: #444441;
+    }
+
+    /* ---- ヒント ---- */
+    .result-hint {
+      font-size: 13px;
+      color: #888780;
+      padding: 12px 14px;
+      border-top: 1px solid #e8e6df;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.5;
+    }
+
+    .result-hint.show {
+      display: flex;
+    }
+
+    .result-hint .ti {
+      font-size: 15px;
+      flex-shrink: 0;
+      color: #C0392B;
+    }
+
+    /* ---- レスポンシブ ---- */
+    @media (max-width: 480px) {
+      .sites {
+        grid-template-columns: 1fr;
+      }
+      .search-row {
+        flex-direction: column;
+      }
+      .search-row button {
+        width: 100%;
+        justify-content: center;
+      }
+      .preset-row {
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <h1>
+      <i class="ti ti-news" aria-label="ニュースアイコン"></i>
+      スポーツニュース横断検索
+    </h1>
+    <p class="subtitle">日刊スポーツ・スポニチ・デイリー ／ 過去3年以内</p>
+  </div>
+
+  <div class="search-row">
+    <input type="text" id="kw" placeholder="キーワードを入力（例：大谷翔平　移籍）" />
+    <button class="btn-primary" onclick="searchAll()">
+      <i class="ti ti-search"></i> 一括検索
+    </button>
+  </div>
+
+  <p class="section-label">検索するサイト（クリックで切り替え）</p>
+  <div class="sites" id="siteGrid">
+    <div class="site-card active" data-site="nikkansports.com/entertainment" data-label="日刊スポーツ" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">日刊スポーツ</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">nikkansports.com</div>
+    </div>
+    <div class="site-card active" data-site="sponichi.co.jp" data-label="スポニチ" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">スポニチ</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">sponichi.co.jp</div>
+    </div>
+    <div class="site-card active" data-site="daily.co.jp" data-label="デイリースポーツ" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">デイリースポーツ</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">daily.co.jp</div>
+    </div>
+    <div class="site-card active" data-site="encount.press" data-label="エンカウント" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">エンカウント</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">encount.press</div>
+    </div>
+    <div class="site-card active" data-site="mdpr.jp" data-label="モデルプレス" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">モデルプレス</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">mdpr.jp</div>
+    </div>
+    <div class="site-card active" data-site="realsound.jp" data-label="リアルサウンド" onclick="toggleSite(this)">
+      <div class="site-header">
+        <div class="dot"></div>
+        <span class="site-name">リアルサウンド</span>
+        <i class="ti ti-check check-icon"></i>
+      </div>
+      <div class="site-url">realsound.jp</div>
+    </div>
+  </div>
+
+  <!-- 検索期間（クリックで展開） -->
+  <div class="filter-wrap" id="filterWrap">
+    <div class="filter-row" id="filterRow" onclick="toggleDatePanel()">
+      <i class="ti ti-calendar"></i>
+      <span class="filter-label">検索期間</span>
+      <span class="filter-val" id="dateRange"></span>
+      <span class="tag" id="presetTag">3年以内</span>
+      <i class="ti ti-chevron-down chevron" id="chevron"></i>
+    </div>
+
+    <!-- 展開パネル -->
+    <div class="date-panel" id="datePanel">
+      <p class="panel-label">期間のプリセット</p>
+      <div class="preset-row">
+        <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
+        <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
+        <button class="preset-btn active" data-years="3" onclick="selectPreset(this)">3年以内</button>
+        <button class="preset-btn" data-years="5" onclick="selectPreset(this)">5年以内</button>
+        <button class="preset-btn" data-years="0" onclick="selectPreset(this)">
+          <i class="ti ti-pencil"></i> カスタム
+        </button>
+      </div>
+
+      <!-- カスタム日付入力（カスタム選択時のみ表示） -->
+      <div class="custom-row" id="customRow">
+        <div class="date-input-group">
+          <label for="dateFrom">開始日</label>
+          <input type="date" id="dateFrom" onchange="applyCustomDate()" />
+        </div>
+        <span class="date-sep"><i class="ti ti-arrow-right"></i></span>
+        <div class="date-input-group">
+          <label for="dateTo">終了日</label>
+          <input type="date" id="dateTo" onchange="applyCustomDate()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-label">サイト個別検索</p>
+  <div class="btn-row" id="siteButtons"></div>
+
+  <div class="result-hint" id="hint">
+    <i class="ti ti-external-link"></i>
+    Googleの検索結果が新しいタブで開きます。ポップアップをブロックしている場合は許可してください。
+  </div>
+</div>
+
+<script>
+  // ---- 日付ユーティリティ ----
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function fmtJP(d) {
+    return d.getFullYear() + '年' + pad(d.getMonth() + 1) + '月' + pad(d.getDate()) + '日';
+  }
+
+  function fmtGoogle(d) {
+    return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+  }
+
+  function fmtInput(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  // ---- 現在の検索期間 ----
+  var today    = new Date();
+  var dateFrom = new Date(today);
+  var dateTo   = new Date(today);
+  dateFrom.setFullYear(today.getFullYear() - 3);
+
+  function updateDisplay() {
+    document.getElementById('dateRange').textContent =
+      fmtJP(dateFrom) + '  〜  ' + fmtJP(dateTo);
+  }
+
+  updateDisplay();
+
+  // ---- 展開パネルの開閉 ----
+  function toggleDatePanel() {
+    document.getElementById('filterWrap').classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('filterWrap');
+    if (!wrap.contains(e.target)) {
+      wrap.classList.remove('open');
+    }
+  });
+
+  // ---- プリセット選択 ----
+  function selectPreset(btn) {
+    document.querySelectorAll('.preset-btn').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    var years     = parseInt(btn.dataset.years, 10);
+    var customRow = document.getElementById('customRow');
+    var tag       = document.getElementById('presetTag');
+
+    if (years === 0) {
+      customRow.classList.add('show');
+      tag.textContent = 'カスタム';
+      tag.classList.add('custom');
+      document.getElementById('dateFrom').value = fmtInput(dateFrom);
+      document.getElementById('dateTo').value   = fmtInput(dateTo);
+    } else {
+      customRow.classList.remove('show');
+      tag.textContent = years + '年以内';
+      tag.classList.remove('custom');
+      dateTo   = new Date(today);
+      dateFrom = new Date(today);
+      dateFrom.setFullYear(today.getFullYear() - years);
+      updateDisplay();
+    }
+  }
+
+  // ---- カスタム日付の適用 ----
+  function applyCustomDate() {
+    var fromVal = document.getElementById('dateFrom').value;
+    var toVal   = document.getElementById('dateTo').value;
+    if (fromVal) dateFrom = new Date(fromVal + 'T00:00:00');
+    if (toVal)   dateTo   = new Date(toVal   + 'T00:00:00');
+    if (dateFrom > dateTo) {
+      var tmp = dateFrom; dateFrom = dateTo; dateTo = tmp;
+      document.getElementById('dateFrom').value = fmtInput(dateFrom);
+      document.getElementById('dateTo').value   = fmtInput(dateTo);
+    }
+    updateDisplay();
+  }
+
+  // ---- サイトカードのON/OFF ----
+  function toggleSite(el) {
+    el.classList.toggle('active');
+    rebuildSiteButtons();
+  }
+
+  function getActiveSites() {
+    return [...document.querySelectorAll('.site-card.active')];
+  }
+
+  function rebuildSiteButtons() {
+    var active    = getActiveSites();
+    var container = document.getElementById('siteButtons');
+    container.innerHTML = '';
+    active.forEach(function(card) {
+      var btn = document.createElement('button');
+      btn.innerHTML = '<i class="ti ti-external-link"></i> ' + card.dataset.label + 'のみ';
+      btn.onclick   = function() { searchSingle(card.dataset.site); };
+      container.appendChild(btn);
+    });
+  }
+
+  // ---- Google検索URLの生成 ----
+  function buildSearchURL(sites, keyword) {
+    var siteQuery = sites.map(function(s) { return 'site:' + s; }).join(' OR ');
+    var fullQuery = keyword + ' (' + siteQuery + ')';
+    var dateTbs   = 'cdr:1,cd_min:' + fmtGoogle(dateFrom) + ',cd_max:' + fmtGoogle(dateTo);
+    return 'https://www.google.com/search'
+      + '?q='   + encodeURIComponent(fullQuery)
+      + '&tbs=' + encodeURIComponent(dateTbs)
+      + '&lr=lang_ja&hl=ja';
+  }
+
+  // ---- 一括検索 ----
+  function searchAll() {
+    var kw     = document.getElementById('kw').value.trim();
+    if (!kw) { alert('キーワードを入力してください'); return; }
+    var active = getActiveSites();
+    if (active.length === 0) { alert('サイトを1つ以上選択してください'); return; }
+    window.open(buildSearchURL(active.map(function(c) { return c.dataset.site; }), kw), '_blank');
+    document.getElementById('hint').classList.add('show');
+    document.getElementById('filterWrap').classList.remove('open');
+  }
+
+  // ---- 個別検索 ----
+  function searchSingle(site) {
+    var kw = document.getElementById('kw').value.trim();
+    if (!kw) { alert('キーワードを入力してください'); return; }
+    window.open(buildSearchURL([site], kw), '_blank');
+    document.getElementById('hint').classList.add('show');
+    document.getElementById('filterWrap').classList.remove('open');
+  }
+
+  // ---- Enterキー ----
+  document.getElementById('kw').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchAll();
+  });
+
+  // ---- 初期化 ----
+  rebuildSiteButtons();
+</script>
+
+</body>
+</html>
