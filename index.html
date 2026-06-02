@@ -792,7 +792,7 @@
       ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w) { return '-' + w; }).join(' ')
       : '';
 
-    var fullQuery = '"' + keyword + '"'
+    var fullQuery = keyword
       + (mustPart    ? ' ' + mustPart    : '')
       + (excludePart ? ' ' + excludePart : '')
       + ' (' + siteQuery + ')';
