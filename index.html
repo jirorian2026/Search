@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>スポーツニュース横断検索</title>
+  <title>ニュース横断検索</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css" />
   <style>
     /* ---- リセット & ベース ---- */
@@ -543,9 +543,9 @@
   <div class="header">
     <h1>
       <i class="ti ti-news" aria-label="ニュースアイコン"></i>
-      スポーツニュース横断検索
+      ニュース横断検索
     </h1>
-    <p class="subtitle">スポーツ・芸能ニュース 6メディア横断検索ツール</p>
+    <p class="subtitle">スポーツ・芸能ニュース検索ツール</p>
   </div>
 
   <div class="search-row">
@@ -783,7 +783,7 @@
     // 必須ワード（スペース区切りをAND検索としてそのまま追加）
     var mustRaw = document.getElementById('mustKw').value.trim();
     var mustPart = mustRaw
-      ? mustRaw.split(/[\s　]+/).filter(Boolean).join(' ')
+      ? mustRaw.split(/[\s　]+/).filter(Boolean).map(function(w){ return '"' + w + '"'; }).join(' ')
       : '';
 
     // 除外ワード（各ワードの前に - を付ける）
@@ -792,7 +792,7 @@
       ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w) { return '-' + w; }).join(' ')
       : '';
 
-    var fullQuery = keyword
+    var fullQuery = '"' + keyword + '"'
       + (mustPart    ? ' ' + mustPart    : '')
       + (excludePart ? ' ' + excludePart : '')
       + ' (' + siteQuery + ')';
