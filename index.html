@@ -636,6 +636,7 @@
     <div class="date-panel" id="datePanel">
       <p class="panel-label">期間のプリセット</p>
       <div class="preset-row">
+        <button class="preset-btn" data-years="-1" onclick="selectPreset(this)">今年</button>
         <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
         <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
         <button class="preset-btn active" data-years="3" onclick="selectPreset(this)">3年以内</button>
@@ -723,7 +724,15 @@
     var customRow = document.getElementById('customRow');
     var tag       = document.getElementById('presetTag');
 
-    if (years === 0) {
+    if (years === -1) {
+      // 今年：1月1日〜今日
+      customRow.classList.remove('show');
+      tag.textContent = '今年';
+      tag.classList.remove('custom');
+      dateTo   = new Date(today);
+      dateFrom = new Date(today.getFullYear(), 0, 1); // 1月1日
+      updateDisplay();
+    } else if (years === 0) {
       customRow.classList.add('show');
       tag.textContent = 'カスタム';
       tag.classList.add('custom');
