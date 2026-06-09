@@ -801,8 +801,8 @@
       ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w) { return '-' + w; }).join(' ')
       : '';
 
-    var fullQuery = keyword
-      + (mustPart    ? ' ' + mustPart    : '')
+    var fullQuery = (mustPart ? mustPart + ' ' : '')
+      + keyword
       + (excludePart ? ' ' + excludePart : '')
       + ' (' + siteQuery + ')';
 
@@ -816,7 +816,8 @@
   // ---- 一括検索 ----
   function searchAll() {
     var kw     = document.getElementById('kw').value.trim();
-    if (!kw) { alert('キーワードを入力してください'); return; }
+    var mustChk = document.getElementById('mustKw').value.trim();
+    if (!kw && !mustChk) { alert('キーワードまたは必須ワードを入力してください'); return; }
     var active = getActiveSites();
     if (active.length === 0) { alert('サイトを1つ以上選択してください'); return; }
     window.open(buildSearchURL(active.map(function(c) { return c.dataset.site; }), kw), '_blank');
@@ -827,7 +828,8 @@
   // ---- 個別検索 ----
   function searchSingle(site) {
     var kw = document.getElementById('kw').value.trim();
-    if (!kw) { alert('キーワードを入力してください'); return; }
+    var mustChk2 = document.getElementById('mustKw').value.trim();
+    if (!kw && !mustChk2) { alert('キーワードまたは必須ワードを入力してください'); return; }
     window.open(buildSearchURL([site], kw), '_blank');
     document.getElementById('hint').classList.add('show');
     document.getElementById('filterWrap').classList.remove('open');
