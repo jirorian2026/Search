@@ -1058,9 +1058,11 @@
     document.getElementById('filterWrap').classList.remove('open');
   }
 
-  // ---- Enterキー ----
-  document.getElementById('kw').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') searchAll();
+  // ---- Enterキーで全体検索（全入力欄共通）----
+  ['kw', 'mustKw', 'excludeKw', 'orKw', 'andKw'].forEach(function(id) {
+    document.getElementById(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') searchGoogle();
+    });
   });
 
 </script>
