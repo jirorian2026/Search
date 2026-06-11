@@ -231,6 +231,43 @@
       margin-bottom: 10px;
     }
 
+    /* ---- サイト選択ヘッダー行 ---- */
+    .site-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .site-toggle-btns {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-toggle-all {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 12px;
+      border-radius: 20px;
+      border: 1.5px solid #d3d1c7;
+      background: #faf9f6;
+      color: #444441;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.12s;
+    }
+
+    .btn-toggle-all:hover {
+      border-color: #C0392B;
+      color: #C0392B;
+      background: #fdf3f2;
+    }
+
     /* ---- サイトカード ---- */
     .sites {
       display: grid;
@@ -530,6 +567,39 @@
 
     .or-label  .ti, .and-label .ti { background: transparent; }
 
+    /* ---- サイト一括切替 ---- */
+    .sites-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .sites-header .section-label {
+      margin-bottom: 0;
+    }
+
+    .sites-toggle {
+      display: flex;
+      gap: 6px;
+    }
+
+    .toggle-btn {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: 1px solid #d3d1c7;
+      background: #faf9f6;
+      color: #444441;
+      gap: 4px;
+    }
+
+    .toggle-btn:hover {
+      border-color: #888780;
+      background: #f0ede6;
+    }
+
     /* ---- サイト指定検索ボタン ---- */
     .btn-site-search {
       width: 100%;
@@ -660,9 +730,15 @@
     </button>
   </div>
 
-  <p class="section-label">検索するサイト（クリックで切り替え）</p>
+  <div class="sites-header">
+    <p class="section-label" style="margin-bottom:0">検索するサイト（クリックで切り替え）</p>
+    <div class="sites-toggle">
+      <button class="toggle-btn" onclick="toggleAllSites(true)"><i class="ti ti-checks"></i> すべて選択</button>
+      <button class="toggle-btn" onclick="toggleAllSites(false)"><i class="ti ti-square"></i> すべて解除</button>
+    </div>
+  </div>
   <div class="sites" id="siteGrid">
-    <div class="site-card active" data-site="nikkansports.com/entertainment" data-label="日刊スポーツ" onclick="toggleSite(this)">
+    <div class="site-card" data-site="nikkansports.com/entertainment" data-label="日刊スポーツ" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">日刊スポーツ</span>
@@ -670,7 +746,7 @@
       </div>
       <div class="site-url">nikkansports.com</div>
     </div>
-    <div class="site-card active" data-site="sponichi.co.jp" data-label="スポニチ" onclick="toggleSite(this)">
+    <div class="site-card" data-site="sponichi.co.jp" data-label="スポニチ" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">スポニチ</span>
@@ -678,7 +754,7 @@
       </div>
       <div class="site-url">sponichi.co.jp</div>
     </div>
-    <div class="site-card active" data-site="daily.co.jp" data-label="デイリースポーツ" onclick="toggleSite(this)">
+    <div class="site-card" data-site="daily.co.jp" data-label="デイリースポーツ" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">デイリースポーツ</span>
@@ -686,7 +762,7 @@
       </div>
       <div class="site-url">daily.co.jp</div>
     </div>
-    <div class="site-card active" data-site="encount.press" data-label="エンカウント" onclick="toggleSite(this)">
+    <div class="site-card" data-site="encount.press" data-label="エンカウント" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">エンカウント</span>
@@ -694,7 +770,7 @@
       </div>
       <div class="site-url">encount.press</div>
     </div>
-    <div class="site-card active" data-site="mdpr.jp" data-label="モデルプレス" onclick="toggleSite(this)">
+    <div class="site-card" data-site="mdpr.jp" data-label="モデルプレス" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">モデルプレス</span>
@@ -702,7 +778,7 @@
       </div>
       <div class="site-url">mdpr.jp</div>
     </div>
-    <div class="site-card active" data-site="realsound.jp" data-label="リアルサウンド" onclick="toggleSite(this)">
+    <div class="site-card" data-site="realsound.jp" data-label="リアルサウンド" onclick="toggleSite(this)">
       <div class="site-header">
         <div class="dot"></div>
         <span class="site-name">リアルサウンド</span>
@@ -852,6 +928,15 @@
       document.getElementById('dateTo').value   = fmtInput(dateTo);
     }
     updateDisplay();
+  }
+
+  // ---- サイト一括ON/OFF ----
+  // ---- 全サイト一括ON/OFF ----
+  function toggleAllSites(on) {
+    document.querySelectorAll('.site-card').forEach(function(card) {
+      if (on) card.classList.add('active');
+      else card.classList.remove('active');
+    });
   }
 
   // ---- サイトカードのON/OFF ----
