@@ -497,6 +497,23 @@
       color: #444441;
     }
 
+    /* ---- OR / AND ラベル ---- */
+    .or-label  { color: #1558b0; }
+    .and-label { color: #6b3fa0; }
+
+    .op-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .or-badge  { background: #1558b0; color: #fff; }
+    .and-badge { background: #6b3fa0; color: #fff; }
+
+    .or-label  .ti, .and-label .ti { background: transparent; }
+
     /* ---- Google全体検索 ---- */
     .google-all-row {
       margin-bottom: 1rem;
@@ -596,6 +613,18 @@
         <i class="ti ti-minus"></i> 除外ワード
       </label>
       <input type="text" id="excludeKw" placeholder="例：スポンサー　CM　（スペース区切りで複数指定）" />
+    </div>
+    <div class="extra-group">
+      <label class="extra-label or-label" for="orKw">
+        <span class="op-badge or-badge">OR</span> OR検索
+      </label>
+      <input type="text" id="orKw" placeholder="例：優勝　受賞　（いずれかを含む記事）" />
+    </div>
+    <div class="extra-group">
+      <label class="extra-label and-label" for="andKw">
+        <span class="op-badge and-badge">AND</span> AND検索
+      </label>
+      <input type="text" id="andKw" placeholder="例：監督　コメント　（すべてを含む記事）" />
     </div>
   </div>
 
@@ -822,25 +851,43 @@
     });
   }
 
-  // ---- Google検索URLの生成 ----
-  function buildSearchURL(sites, keyword) {
-    var siteQuery = sites.map(function(s) { return 'site:' + s; }).join(' OR ');
-
-    // 必須ワード（スペース区切りをAND検索としてそのまま追加）
+  // ---- 検索パーツ生成（共通）----
+  function buildParts() {
     var mustRaw = document.getElementById('mustKw').value.trim();
     var mustPart = mustRaw
       ? mustRaw.split(/[\s　]+/).filter(Boolean).map(function(w){ return '"' + w + '"'; }).join(' ')
       : '';
 
-    // 除外ワード（各ワードの前に - を付ける）
     var excludeRaw = document.getElementById('excludeKw').value.trim();
     var excludePart = excludeRaw
-      ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w) { return '-' + w; }).join(' ')
+      ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w){ return '-' + w; }).join(' ')
       : '';
 
-    var fullQuery = (mustPart ? mustPart + ' ' : '')
+    // OR検索：(word1 OR word2 OR word3)
+    var orRaw = document.getElementById('orKw').value.trim();
+    var orPart = orRaw
+      ? '(' + orRaw.split(/[\s　]+/).filter(Boolean).join(' OR ') + ')'
+      : '';
+
+    // AND検索：word1 word2 word3（スペース区切り＝Googleデフォルトのand）
+    var andRaw = document.getElementById('andKw').value.trim();
+    var andPart = andRaw
+      ? andRaw.split(/[\s　]+/).filter(Boolean).join(' ')
+      : '';
+
+    return { mustPart: mustPart, excludePart: excludePart, orPart: orPart, andPart: andPart };
+  }
+
+  // ---- Google検索URLの生成 ----
+  function buildSearchURL(sites, keyword) {
+    var siteQuery = sites.map(function(s) { return 'site:' + s; }).join(' OR ');
+    var p = buildParts();
+
+    var fullQuery = (p.mustPart   ? p.mustPart + ' '   : '')
       + keyword
-      + (excludePart ? ' ' + excludePart : '')
+      + (p.andPart   ? ' ' + p.andPart   : '')
+      + (p.orPart    ? ' ' + p.orPart    : '')
+      + (p.excludePart ? ' ' + p.excludePart : '')
       + ' (' + siteQuery + ')';
 
     var dateTbs = 'cdr:1,cd_min:' + fmtGoogle(dateFrom) + ',cd_max:' + fmtGoogle(dateTo);
@@ -854,20 +901,16 @@
   function searchGoogle() {
     var kw       = document.getElementById('kw').value.trim();
     var mustChk  = document.getElementById('mustKw').value.trim();
-    if (!kw && !mustChk) { alert('キーワードまたは必須ワードを入力してください'); return; }
+    var orChk2   = document.getElementById('orKw').value.trim();
+    var andChk2  = document.getElementById('andKw').value.trim();
+    if (!kw && !mustChk && !orChk2 && !andChk2) { alert('いずれかの検索欄を入力してください'); return; }
 
-    var mustRaw    = document.getElementById('mustKw').value.trim();
-    var mustPart   = mustRaw
-      ? mustRaw.split(/[\s　]+/).filter(Boolean).map(function(w){ return '"' + w + '"'; }).join(' ')
-      : '';
-    var excludeRaw  = document.getElementById('excludeKw').value.trim();
-    var excludePart = excludeRaw
-      ? excludeRaw.split(/[\s　]+/).filter(Boolean).map(function(w){ return '-' + w; }).join(' ')
-      : '';
-
-    var fullQuery = (mustPart ? mustPart + ' ' : '')
+    var p = buildParts();
+    var fullQuery = (p.mustPart   ? p.mustPart + ' '   : '')
       + kw
-      + (excludePart ? ' ' + excludePart : '');
+      + (p.andPart   ? ' ' + p.andPart   : '')
+      + (p.orPart    ? ' ' + p.orPart    : '')
+      + (p.excludePart ? ' ' + p.excludePart : '');
 
     var dateTbs = 'cdr:1,cd_min:' + fmtGoogle(dateFrom) + ',cd_max:' + fmtGoogle(dateTo);
     var url = 'https://www.google.com/search'
@@ -884,7 +927,9 @@
   function searchAll() {
     var kw     = document.getElementById('kw').value.trim();
     var mustChk = document.getElementById('mustKw').value.trim();
-    if (!kw && !mustChk) { alert('キーワードまたは必須ワードを入力してください'); return; }
+    var orChk   = document.getElementById('orKw').value.trim();
+    var andChk  = document.getElementById('andKw').value.trim();
+    if (!kw && !mustChk && !orChk && !andChk) { alert('いずれかの検索欄を入力してください'); return; }
     var active = getActiveSites();
     if (active.length === 0) { alert('サイトを1つ以上選択してください'); return; }
     window.open(buildSearchURL(active.map(function(c) { return c.dataset.site; }), kw), '_blank');
@@ -896,7 +941,9 @@
   function searchSingle(site) {
     var kw = document.getElementById('kw').value.trim();
     var mustChk2 = document.getElementById('mustKw').value.trim();
-    if (!kw && !mustChk2) { alert('キーワードまたは必須ワードを入力してください'); return; }
+    var orChk3   = document.getElementById('orKw').value.trim();
+    var andChk3  = document.getElementById('andKw').value.trim();
+    if (!kw && !mustChk2 && !orChk3 && !andChk3) { alert('いずれかの検索欄を入力してください'); return; }
     window.open(buildSearchURL([site], kw), '_blank');
     document.getElementById('hint').classList.add('show');
     document.getElementById('filterWrap').classList.remove('open');
