@@ -726,6 +726,46 @@
     </div>
   </div>
 
+  <!-- 検索期間（クリックで展開） -->
+  <div class="filter-wrap" id="filterWrap">
+    <div class="filter-row" id="filterRow" onclick="toggleDatePanel()">
+      <i class="ti ti-calendar"></i>
+      <span class="filter-label">検索期間</span>
+      <span class="filter-val" id="dateRange"></span>
+      <span class="tag" id="presetTag">全期間</span>
+      <i class="ti ti-chevron-down chevron" id="chevron"></i>
+    </div>
+
+    <!-- 展開パネル -->
+    <div class="date-panel" id="datePanel">
+      <p class="panel-label">期間のプリセット</p>
+      <div class="preset-row">
+        <button class="preset-btn active" data-years="all" onclick="selectPreset(this)">全期間</button>
+        <button class="preset-btn" data-years="-1" onclick="selectPreset(this)">今年</button>
+        <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
+        <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
+        <button class="preset-btn" data-years="3" onclick="selectPreset(this)">3年以内</button>
+        <button class="preset-btn" data-years="5" onclick="selectPreset(this)">5年以内</button>
+        <button class="preset-btn" data-years="0" onclick="selectPreset(this)">
+          <i class="ti ti-pencil"></i> カスタム
+        </button>
+      </div>
+
+      <!-- カスタム日付入力（カスタム選択時のみ表示） -->
+      <div class="custom-row" id="customRow">
+        <div class="date-input-group">
+          <label for="dateFrom">開始日</label>
+          <input type="date" id="dateFrom" onchange="applyCustomDate()" />
+        </div>
+        <span class="date-sep"><i class="ti ti-arrow-right"></i></span>
+        <div class="date-input-group">
+          <label for="dateTo">終了日</label>
+          <input type="date" id="dateTo" onchange="applyCustomDate()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="btn-search-row">
     <button class="btn-google-all" onclick="searchGoogle()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
@@ -824,45 +864,6 @@
     <i class="ti ti-search"></i> 検索サイトを指定して検索
   </button>
 
-  <!-- 検索期間（クリックで展開） -->
-  <div class="filter-wrap" id="filterWrap">
-    <div class="filter-row" id="filterRow" onclick="toggleDatePanel()">
-      <i class="ti ti-calendar"></i>
-      <span class="filter-label">検索期間</span>
-      <span class="filter-val" id="dateRange"></span>
-      <span class="tag" id="presetTag">全期間</span>
-      <i class="ti ti-chevron-down chevron" id="chevron"></i>
-    </div>
-
-    <!-- 展開パネル -->
-    <div class="date-panel" id="datePanel">
-      <p class="panel-label">期間のプリセット</p>
-      <div class="preset-row">
-        <button class="preset-btn active" data-years="all" onclick="selectPreset(this)">全期間</button>
-        <button class="preset-btn" data-years="-1" onclick="selectPreset(this)">今年</button>
-        <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
-        <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
-        <button class="preset-btn" data-years="3" onclick="selectPreset(this)">3年以内</button>
-        <button class="preset-btn" data-years="5" onclick="selectPreset(this)">5年以内</button>
-        <button class="preset-btn" data-years="0" onclick="selectPreset(this)">
-          <i class="ti ti-pencil"></i> カスタム
-        </button>
-      </div>
-
-      <!-- カスタム日付入力（カスタム選択時のみ表示） -->
-      <div class="custom-row" id="customRow">
-        <div class="date-input-group">
-          <label for="dateFrom">開始日</label>
-          <input type="date" id="dateFrom" onchange="applyCustomDate()" />
-        </div>
-        <span class="date-sep"><i class="ti ti-arrow-right"></i></span>
-        <div class="date-input-group">
-          <label for="dateTo">終了日</label>
-          <input type="date" id="dateTo" onchange="applyCustomDate()" />
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="result-hint" id="hint">
     <i class="ti ti-external-link"></i>
