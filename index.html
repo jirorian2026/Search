@@ -449,21 +449,28 @@
     /* ---- プリセットボタン行 ---- */
     .preset-row {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       margin-bottom: 0;
+      scrollbar-width: none;
+    }
+
+    .preset-row::-webkit-scrollbar {
+      display: none;
     }
 
     .preset-btn {
-      height: 34px;
-      padding: 0 14px;
-      font-size: 13px;
+      height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
       border-radius: 20px;
       border: 1.5px solid #d3d1c7;
       background: #faf9f6;
       color: #444441;
       font-weight: 500;
       transition: all 0.12s;
+      white-space: nowrap;
     }
 
     .preset-btn:hover {
@@ -823,7 +830,7 @@
       <i class="ti ti-calendar"></i>
       <span class="filter-label">検索期間</span>
       <span class="filter-val" id="dateRange"></span>
-      <span class="tag" id="presetTag">3年以内</span>
+      <span class="tag" id="presetTag">全期間</span>
       <i class="ti ti-chevron-down chevron" id="chevron"></i>
     </div>
 
@@ -831,10 +838,11 @@
     <div class="date-panel" id="datePanel">
       <p class="panel-label">期間のプリセット</p>
       <div class="preset-row">
+        <button class="preset-btn active" data-years="all" onclick="selectPreset(this)">全期間</button>
         <button class="preset-btn" data-years="-1" onclick="selectPreset(this)">今年</button>
         <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
         <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
-        <button class="preset-btn active" data-years="3" onclick="selectPreset(this)">3年以内</button>
+        <button class="preset-btn" data-years="3" onclick="selectPreset(this)">3年以内</button>
         <button class="preset-btn" data-years="5" onclick="selectPreset(this)">5年以内</button>
         <button class="preset-btn" data-years="0" onclick="selectPreset(this)">
           <i class="ti ti-pencil"></i> カスタム
@@ -886,9 +894,11 @@
   var dateTo   = new Date(today);
   dateFrom.setFullYear(today.getFullYear() - 3);
 
+  var isAllPeriod = true;
+
   function updateDisplay() {
     document.getElementById('dateRange').textContent =
-      fmtJP(dateFrom) + '  〜  ' + fmtJP(dateTo);
+      isAllPeriod ? '指定なし' : fmtJP(dateFrom) + '  〜  ' + fmtJP(dateTo);
   }
 
   updateDisplay();
@@ -916,7 +926,13 @@
     var customRow = document.getElementById('customRow');
     var tag       = document.getElementById('presetTag');
 
-    if (years === -1) {
+    if (years === 'all') {
+      customRow.classList.remove('show');
+      tag.textContent = '全期間';
+      tag.classList.remove('custom');
+      isAllPeriod = true;
+      updateDisplay();
+    } else if (years === -1) {
       // 今年：1月1日〜今日
       customRow.classList.remove('show');
       tag.textContent = '今年';
@@ -924,16 +940,19 @@
       dateTo   = new Date(today);
       dateFrom = new Date(today.getFullYear(), 0, 1); // 1月1日
       updateDisplay();
+      isAllPeriod = false;
     } else if (years === 0) {
       customRow.classList.add('show');
       tag.textContent = 'カスタム';
       tag.classList.add('custom');
+      isAllPeriod = false;
       document.getElementById('dateFrom').value = fmtInput(dateFrom);
       document.getElementById('dateTo').value   = fmtInput(dateTo);
     } else {
       customRow.classList.remove('show');
       tag.textContent = years + '年以内';
       tag.classList.remove('custom');
+      isAllPeriod = false;
       dateTo   = new Date(today);
       dateFrom = new Date(today);
       dateFrom.setFullYear(today.getFullYear() - years);
@@ -1027,7 +1046,7 @@
     var dateTbs = 'cdr:1,cd_min:' + fmtGoogle(dateFrom) + ',cd_max:' + fmtGoogle(dateTo);
     return 'https://www.google.com/search'
       + '?q='   + encodeURIComponent(fullQuery)
-      + '&tbs=' + encodeURIComponent(dateTbs)
+      + (isAllPeriod ? '' : '&tbs=' + encodeURIComponent(dateTbs))
       + '&lr=lang_ja&hl=ja';
   }
 
@@ -1049,7 +1068,7 @@
     var dateTbs = 'cdr:1,cd_min:' + fmtGoogle(dateFrom) + ',cd_max:' + fmtGoogle(dateTo);
     var url = 'https://www.google.com/search'
       + '?q='   + encodeURIComponent(fullQuery)
-      + '&tbs=' + encodeURIComponent(dateTbs)
+      + (isAllPeriod ? '' : '&tbs=' + encodeURIComponent(dateTbs))
       + '&lr=lang_ja&hl=ja';
 
     window.open(url, '_blank');
