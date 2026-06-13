@@ -732,7 +732,7 @@
       <i class="ti ti-calendar"></i>
       <span class="filter-label">検索期間</span>
       <span class="filter-val" id="dateRange"></span>
-      <span class="tag" id="presetTag">全期間</span>
+      <span class="tag" id="presetTag">指定なし</span>
       <i class="ti ti-chevron-down chevron" id="chevron"></i>
     </div>
 
@@ -740,7 +740,7 @@
     <div class="date-panel" id="datePanel">
       <p class="panel-label">期間のプリセット</p>
       <div class="preset-row">
-        <button class="preset-btn active" data-years="all" onclick="selectPreset(this)">全期間</button>
+        <button class="preset-btn active" data-years="all" onclick="selectPreset(this)">指定なし</button>
         <button class="preset-btn" data-years="-1" onclick="selectPreset(this)">今年</button>
         <button class="preset-btn" data-years="1" onclick="selectPreset(this)">1年以内</button>
         <button class="preset-btn" data-years="2" onclick="selectPreset(this)">2年以内</button>
@@ -923,13 +923,14 @@
     });
     btn.classList.add('active');
 
-    var years     = parseInt(btn.dataset.years, 10);
+    var yearsRaw  = btn.dataset.years;
+    var years     = yearsRaw === 'all' ? 'all' : parseInt(yearsRaw, 10);
     var customRow = document.getElementById('customRow');
     var tag       = document.getElementById('presetTag');
 
     if (years === 'all') {
       customRow.classList.remove('show');
-      tag.textContent = '全期間';
+      tag.textContent = '指定なし';
       tag.classList.remove('custom');
       isAllPeriod = true;
       updateDisplay();
@@ -938,10 +939,10 @@
       customRow.classList.remove('show');
       tag.textContent = '今年';
       tag.classList.remove('custom');
+      isAllPeriod = false;
       dateTo   = new Date(today);
       dateFrom = new Date(today.getFullYear(), 0, 1); // 1月1日
       updateDisplay();
-      isAllPeriod = false;
     } else if (years === 0) {
       customRow.classList.add('show');
       tag.textContent = 'カスタム';
